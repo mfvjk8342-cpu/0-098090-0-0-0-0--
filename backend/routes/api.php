@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\{
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\User\{
     AppointmentController,
+    ProfileController,
     UserTimeSlotController
 };
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,9 @@ Route::prefix('admin')
 Route::middleware('auth:sanctum')->group(function () {
     // User Time SLot
     Route::get('user/time-slots', [UserTimeSlotController::class, 'index']);
+    // User profile
+    Route::get('user/profile', [ProfileController::class, 'show']);
+    Route::put('user/profile', [ProfileController::class, 'update']);
     // Appointment -> book & cancel
     Route::post('appointments', [AppointmentController::class, 'store']);
     Route::delete('appointments/{appointment}', [AppointmentController::class, 'destroy']);

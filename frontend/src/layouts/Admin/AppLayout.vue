@@ -30,7 +30,7 @@ const closeSidebar = () => {
             <!-- Page Content -->
             <main class="flex-1 overflow-y-auto bg-gradient-to-b from-gray-100 to-blue-50 transition-all duration-300"
                 :class="[isSidebarOpen ? 'lg:ml-70' : 'lg:ml-0']">
-                <div class="min-h-screen p-6 max-w-8xl mx-auto" v-animate="{ animation: 'fade-in', duration: 500 }">
+                <div class="min-h-screen p-6 max-w-8xl mx-auto page-enter">
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <slot />
                     </div>
@@ -52,8 +52,8 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-[v-animate] {
-    animation: fade-in var(--animate-duration) ease-in-out;
+.page-enter {
+    animation: fade-in 500ms ease-in-out;
 }
 
 main {

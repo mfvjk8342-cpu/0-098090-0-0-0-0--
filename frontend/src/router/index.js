@@ -8,6 +8,7 @@ import LoginView from '@/views/Auth/LoginView.vue'
 import ResetPasswordView from '@/views/Auth/ResetPasswordView.vue'
 import SignupView from '@/views/Auth/SignupView.vue'
 import HomeView from '@/views/User/HomeView.vue'
+import ProfileView from '@/views/User/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,12 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
       meta: { layout: 'user', requiresAuth: false, role: 'user' },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      meta: { layout: 'user', requiresAuth: true, role: 'user' },
     },
     // admin availability route
     {

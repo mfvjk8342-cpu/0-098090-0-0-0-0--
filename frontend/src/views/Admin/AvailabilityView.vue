@@ -10,6 +10,7 @@ const showModal = ref(false)
 const modalMode = ref('create')
 const formLoading = ref(false)
 const formData = ref({ id: null, date: '', start_time: '', end_time: '', slot_duration: 30 })
+const formError = ref('')
 
 const fetchAvailabilities = async () => {
     loading.value = true
@@ -33,10 +34,31 @@ const openModal = (mode, item = null) => {
         end_time: item.end_time.substring(0, 5),
         slot_duration: item.slot_duration
     } : { id: null, date: '', start_time: '', end_time: '', slot_duration: 30 }
+    formError.value = ''
     showModal.value = true
 }
 
+const validateForm = () => {
+    const { date, start_time, end_time, slot_duration } = formData.value
+    if (!date || !start_time || !end_time) {
+        formError.value = 'Please fill date, start time, and end time.'
+        return false
+    }
+    if (!slot_duration || Number(slot_duration) < 10) {
+        formError.value = 'Slot duration must be at least 10 minutes.'
+        return false
+    }
+    if (end_time <= start_time) {
+        formError.value = 'End time must be after start time.'
+        return false
+    }
+    formError.value = ''
+    return true
+}
+
 const submitForm = async () => {
+    if (!validateForm()) return
+
     formLoading.value = true
     error.value = null
     try {
@@ -49,7 +71,12 @@ const submitForm = async () => {
             fetchAvailabilities()
         }
     } catch (err) {
-        error.value = err.response?.data?.message || 'Failed to save'
+        const backendErrors = err.response?.data?.errors
+        if (backendErrors && typeof backendErrors === 'object') {
+            formError.value = Object.values(backendErrors).flat().join(' ')
+        } else {
+            formError.value = err.response?.data?.message || 'Failed to save'
+        }
     } finally {
         formLoading.value = false
     }
@@ -258,6 +285,9 @@ onMounted(fetchAvailabilities)
                 </div>
 
                 <div class="p-6 space-y-4">
+                    <div v-if="formError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                        {{ formError }}
+                    </div>
                     <div v-for="(field, idx) in [
                         { key: 'date', label: 'Date', type: 'date', icon: 'calendar', color: 'blue' },
                         { key: 'start_time', label: 'Start Time', type: 'time', icon: 'clock', color: 'green' },

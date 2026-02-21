@@ -162,9 +162,7 @@ onMounted(() => {
             <h3 class="text-xl font-semibold text-gray-700 mb-2">No Appointments Found</h3>
             <p class="text-gray-500">
                 {{
-                    searchQuery || filterStatus !== 'all'
-                        ? 'Try adjusting your filters'
-                        : 'There are no appointments at the moment.'
+                    searchQuery ? 'Try adjusting your filters' : 'There are no appointments at the moment.'
                 }}
             </p>
         </div>

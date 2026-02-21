@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 
 const isLoading = ref(false);
@@ -8,6 +8,15 @@ const isLoading = ref(false);
 const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
+
+const getApiRoot = () => {
+    const base = (axios.defaults.baseURL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+    return base.replace(/\/api$/, '');
+};
+
+const continueWithGoogle = () => {
+    window.location.href = `${getApiRoot()}/api/google/redirect`;
+};
 
 const login = async () => {
     try {
@@ -39,6 +48,31 @@ const login = async () => {
         isLoading.value = false;
     }
 };
+
+onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const role = params.get('role');
+    const profileRequired = params.get('profile_required');
+    const oauthError = params.get('oauth_error');
+
+    if (token && role) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', role);
+        window.history.replaceState({}, '', '/login');
+        if (profileRequired === '1') {
+            window.location.href = '/profile?setup=1';
+            return;
+        }
+        window.location.href = role === 'admin' ? '/availability' : '/';
+        return;
+    }
+
+    if (oauthError) {
+        errorMessage.value = oauthError;
+        window.history.replaceState({}, '', '/login');
+    }
+});
 
 
 </script>
@@ -113,6 +147,14 @@ const login = async () => {
                             <span class="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
                         </div>
                     </div>
+
+                    <button type="button" @click="continueWithGoogle"
+                        class="w-full py-4 border border-gray-300 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-3">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.2-1.4 3.5-5.5 3.5-3.3 0-6-2.8-6-6.2s2.7-6.2 6-6.2c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.9 2.7 14.7 1.8 12 1.8 6.9 1.8 2.8 6 2.8 11.2S6.9 20.6 12 20.6c6.9 0 9.2-4.9 9.2-7.4 0-.5-.1-.9-.1-1.3H12z" />
+                        </svg>
+                        Continue with Google
+                    </button>
 
                     <!-- Links -->
                     <div class="mt-8 text-center space-y-3 text-sm">

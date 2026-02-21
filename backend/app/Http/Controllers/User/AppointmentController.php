@@ -11,6 +11,7 @@ use App\Models\TimeSlot;
 use App\Services\Appointment\AppointmentService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AppointmentController extends Controller
 {
@@ -29,14 +30,27 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         try {
-            $result = $this->appointmentService->bookAppointment($request->user(), $request->input('slot_id'));
+            $validated = $request->validate([
+                'slot_id' => ['required', 'integer', 'exists:time_slots,id'],
+            ]);
+
+            $result = $this->appointmentService->bookAppointment($request->user(), $validated['slot_id']);
             return $this->success([
                 'appointment' => new AppointmentResource($result['appointment']),
                 'checkout_url' => $result['checkout_url'],
             ], 'Appointment Created', 201);
-        } catch (\Exception $e) {
-            $code = $e->getCode() ?: 422;
-            return $this->error($e->getMessage(), [], $code);
+        } catch (ValidationException $e) {
+            return $this->error('Validation failed', $e->errors(), 422);
+        } catch (\Throwable $e) {
+            $message = $e->getMessage() ?: 'Failed to create appointment';
+            $status = match (true) {
+                $e->getCode() >= 400 && $e->getCode() <= 599 => $e->getCode(),
+                str_contains(strtolower($message), 'already have an active appointment') => 409,
+                str_contains(strtolower($message), 'slot not available') => 409,
+                default => 422,
+            };
+
+            return $this->error($message, [], $status);
         }
     }
 

@@ -108,7 +108,7 @@ class AppointmentService
                 'checkout_url' => $checkout_session->url,
             ];
         } catch (\Throwable $th) {
-            $appointment->update(['status' => 'canceled']);
+            $appointment->update(['status' => 'cancelled']);
             $appointment->timeSlot->update(['status' => 'available']);
             throw new \Exception('Payment gateway error: ' . $th->getMessage());
         }

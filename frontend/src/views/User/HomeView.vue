@@ -27,7 +27,15 @@ const fetchSlots = async () => {
 const fetchMyApt = async () => {
     try {
         myApt.value = (await axios.get('/user/time-slots')).data.data[0] || null
-    } catch { }
+    } catch (e) {
+        myApt.value = null
+        console.error('Failed to load my appointment', e)
+    }
+}
+
+const openMyAppointment = async () => {
+    if (isAuth.value) await fetchMyApt()
+    showModal.value = true
 }
 
 const book = async (id) => {
@@ -45,6 +53,10 @@ const book = async (id) => {
         }
     } catch (e) {
         toast.error(e.response?.data?.message || 'Booking failed')
+        if (e.response?.status === 409) {
+            await fetchMyApt()
+            showModal.value = true
+        }
         booking.value = false
     }
 }
@@ -100,13 +112,17 @@ const features = [
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button @click="showModal = true" class="p-3 hover:bg-gray-50 rounded-xl transition group">
+                    <button @click="openMyAppointment" class="p-3 hover:bg-gray-50 rounded-xl transition group">
                         <svg class="w-6 h-6 text-gray-600 group-hover:text-emerald-600 transition" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 :d="iconPath.calendar" />
                         </svg>
                     </button>
+                    <RouterLink v-if="isAuth" to="/profile"
+                        class="px-4 py-3 text-gray-700 font-semibold hover:bg-gray-50 rounded-xl transition">
+                        Profile
+                    </RouterLink>
                     <RouterLink v-if="!isAuth" to="/login"
                         class="px-7 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all">
                         Sign In</RouterLink>
