@@ -17,10 +17,13 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Install backend PHP dependencies first for layer caching
 COPY backend/composer.json backend/composer.lock /app/backend/
 WORKDIR /app/backend
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
 # Copy backend source
 COPY backend /app/backend
+
+# Run Laravel package discovery after application files are available
+RUN php artisan package:discover --ansi
 
 # Prepare writable directories
 RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \

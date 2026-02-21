@@ -16,10 +16,13 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Install PHP deps first (better layer cache)
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
 # Copy app source
 COPY . .
+
+# Run Laravel package discovery after application files are available
+RUN php artisan package:discover --ansi
 
 # Runtime Laravel prep (safe if directories already exist)
 RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
