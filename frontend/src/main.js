@@ -9,7 +9,8 @@ import axios from 'axios'
 import Toast, { POSITION } from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 
-axios.defaults.baseURL = 'http://127.0.0.1:8000/api/' // Backend URL
+const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
+axios.defaults.baseURL = `${apiUrl.replace(/\/+$/, '')}/`
 axios.defaults.withCredentials = true
 
 const token = localStorage.getItem('token')

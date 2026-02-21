@@ -72,6 +72,8 @@ class AppointmentService
 
         try {
 
+            $frontendUrl = rtrim((string) env('FRONTEND_URL', 'http://127.0.0.1:3000'), '/');
+
             $checkout_session = $this->stripe->checkout->sessions->create([
                 'line_items' => [
                     [
@@ -91,8 +93,8 @@ class AppointmentService
                 ],
                 'customer_creation' => 'always',
                 'mode' => 'payment',
-                'success_url' => 'http://localhost:5173/#appointments',
-                'cancel_url' => 'http://localhost:5173/#appointments',
+                'success_url' => "{$frontendUrl}/#appointments",
+                'cancel_url' => "{$frontendUrl}/#appointments",
             ]);
 
             $payment = Payment::create([
